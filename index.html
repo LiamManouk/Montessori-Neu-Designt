@@ -1058,62 +1058,6 @@ try {
   FIREBASE_READY = false;
 }
 
-async function sobAuthSubmit() {
-  var emailEl = document.getElementById('sob-email-input');
-  var pwEl = document.getElementById('sob-password-input');
-  var errEl = document.getElementById('sob-auth-error');
-  var email = emailEl ? emailEl.value.trim() : '';
-  var password = pwEl ? pwEl.value : '';
-  if (errEl) errEl.textContent = '';
-
-  if (!email) { if (errEl) errEl.textContent = 'Bitte E-Mail eingeben.'; return; }
-
-  if (!FIREBASE_READY) {
-    // Fallback, solange Firebase noch nicht konfiguriert ist
-    localStorage.setItem('user_email', email);
-    fetch('https://montessori-proxy.liam-broemer.workers.dev/save-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email })
-    }).catch(function() {});
-    sobNext();
-    return;
-  }
-
-  if (!password || password.length < 6) {
-    if (errEl) errEl.textContent = 'Passwort muss mindestens 6 Zeichen haben.';
-    return;
-  }
-
-  var auth = firebase.auth();
-  try {
-    await auth.signInWithEmailAndPassword(email, password);
-  } catch (err) {
-    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-      try {
-        await auth.createUserWithEmailAndPassword(email, password);
-      } catch (err2) {
-        if (errEl) errEl.textContent = 'Anmeldung fehlgeschlagen: ' + (err2.message || err2.code);
-        return;
-      }
-    } else if (err.code === 'auth/wrong-password') {
-      if (errEl) errEl.textContent = 'Falsches Passwort.';
-      return;
-    } else {
-      if (errEl) errEl.textContent = 'Anmeldung fehlgeschlagen: ' + (err.message || err.code);
-      return;
-    }
-  }
-
-  localStorage.setItem('user_email', email);
-  fetch('https://montessori-proxy.liam-broemer.workers.dev/save-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email })
-  }).catch(function() {});
-  sobNext();
-}
-
 async function obAuthSubmit() {
   var emailEl = document.getElementById('ob-email-input');
   var pwEl = document.getElementById('ob-password-input');
@@ -1225,7 +1169,7 @@ function sobUpdateNav() {
   var back = document.getElementById('sob-back');
   var next = document.getElementById('sob-next');
   if (sobStep === 0) {
-    // Login-Screen hat eigenen Weiter-Button (sobAuthSubmit) — untere Nav ausblenden
+    // Kita-Slide hat eigenen Button (sobJoinKita) — untere Nav ausblenden
     if (back) back.style.display = 'none';
     if (next) next.style.display = 'none';
     return;
