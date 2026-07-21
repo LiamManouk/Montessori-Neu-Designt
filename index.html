@@ -3678,7 +3678,7 @@ async function fcSubmitCurrent() {
   var userMsg = 'SITUATION: ' + fc.situation + '\nREAKTION DER ELTERN: ' + val + '\n\nBitte analysiere diese Reaktion konkret.';
   try {
     var _u1 = location.hostname.includes('github.io') ? 'https://montessori-proxy.liam-broemer.workers.dev' : 'https://api.anthropic.com/v1/messages';
-    var _h1 = location.hostname.includes('github.io') ? {'Content-Type':'application/json','anthropic-version':'2023-06-01','x-device-id':getDeviceId()} : {'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-beta':'prompt-caching-2024-07-31','anthropic-dangerous-direct-browser-access':'true'};
+    var _h1 = location.hostname.includes('github.io') ? {'Content-Type':'application/json','anthropic-version':'2023-06-01','x-device-id':getDeviceId(),'x-user-email':(localStorage.getItem('user_email')||'')} : {'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-beta':'prompt-caching-2024-07-31','anthropic-dangerous-direct-browser-access':'true'};
     var r = await fetch(_u1, {
       method:'POST',
       headers:_h1,
@@ -3919,7 +3919,7 @@ async function submitPractice() {
     var _u2 = location.hostname.includes('github.io') ? 'https://montessori-proxy.liam-broemer.workers.dev' : 'https://api.anthropic.com/v1/messages';
     var r = await fetch(_u2, {
       method: 'POST',
-      headers: location.hostname.includes('github.io') ? {'Content-Type':'application/json','anthropic-version':'2023-06-01','x-device-id':getDeviceId()} : {'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers: location.hostname.includes('github.io') ? {'Content-Type':'application/json','anthropic-version':'2023-06-01','x-device-id':getDeviceId(),'x-user-email':(localStorage.getItem('user_email')||'')} : {'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 400,
@@ -4814,7 +4814,7 @@ function renderBotIncremental(obj, d) {
 
 async function streamChatOnce(maxTok, d) {
   var _apiUrl2 = location.hostname.includes('github.io') ? 'https://montessori-proxy.liam-broemer.workers.dev' : 'https://api.anthropic.com/v1/messages';
-  var _headers2 = location.hostname.includes('github.io') ? {'Content-Type':'application/json','anthropic-version':'2023-06-01','x-device-id':getDeviceId()} : {'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+  var _headers2 = location.hostname.includes('github.io') ? {'Content-Type':'application/json','anthropic-version':'2023-06-01','x-device-id':getDeviceId(),'x-user-email':(localStorage.getItem('user_email')||'')} : {'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
 
   var r = await fetch(_apiUrl2, {
     method: 'POST',
