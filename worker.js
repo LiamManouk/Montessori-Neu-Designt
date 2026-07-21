@@ -3,6 +3,7 @@ const RATE_LIMIT = 20;
 const JSONBIN_BIN_ID = "6a2c3719da38895dfeb60209";
 const KITA_DIRECTORY_BIN_ID = "6a328c9ada38895dfecfe3c3";
 const ADMIN_PASSWORD = "passt";
+const OWNER_EMAIL = "liam.broemer@icloud.com"; // eigene Test-Nutzung wird aus /usage-detail ausgeschlossen
 
 // Bot-Erkennung: echte App-Geräte haben immer "dev_"-Prefix
 function detectBot(deviceId, userAgent) {
@@ -19,7 +20,7 @@ export default {
     const corsHeaders = {
       "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, anthropic-version, x-api-key, x-device-id, x-feedback, anthropic-beta, x-admin-password",
+      "Access-Control-Allow-Headers": "Content-Type, anthropic-version, x-api-key, x-device-id, x-user-email, x-feedback, anthropic-beta, x-admin-password",
     };
 
     if (request.method === "OPTIONS") {
@@ -231,6 +232,87 @@ export default {
         return json({ ok: false, error: "Unbekannte Aktion." }, 400);
       }
 
+      // ── USAGE-DETAIL (Admin): wer/wann/wieviel ────────────────
+      if (url.pathname === "/usage-detail") {
+        const pw = request.headers.get("x-admin-password") || "";
+        if (pw !== ADMIN_PASSWORD) return json({ ok: false, error: "Nicht autorisiert." }, 401);
+
+        const numDays = Math.min(parseInt(url.searchParams.get("days") || "7"), 31);
+        const includeOwner = url.searchParams.get("include_owner") === "true";
+
+        const emailCache = new Map(); // deviceId -> { email, isOwner }
+        const resolveDevice = async (deviceId) => {
+          if (emailCache.has(deviceId)) return emailCache.get(deviceId);
+          const [email, ownerFlag] = await Promise.all([
+            env.RATE_STORE.get(`email:${deviceId}`),
+            env.RATE_STORE.get(`owner:${deviceId}`)
+          ]);
+          const info = { email: email || null, isOwner: ownerFlag === "1" };
+          emailCache.set(deviceId, info);
+          return info;
+        };
+
+        const dayResults = [];
+        const deviceTotals = new Map(); // deviceId -> { email, isOwner, chat, flashcard }
+
+        for (let i = numDays - 1; i >= 0; i--) {
+          const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+          const listRes = await env.RATE_STORE.list({ prefix: `usage:${d}:` });
+          const entries = await Promise.all(listRes.keys.map(async (k) => {
+            const parts = k.name.split(":"); // usage:{date}:{deviceId}:{type}
+            const deviceId = parts[2];
+            const type = parts[3];
+            const count = parseInt(await env.RATE_STORE.get(k.name) || "0");
+            return { deviceId, type, count };
+          }));
+
+          const dayUsers = new Map(); // deviceId -> {chat, flashcard}
+          for (const e of entries) {
+            const cur = dayUsers.get(e.deviceId) || { chat: 0, flashcard: 0 };
+            cur[e.type] = (cur[e.type] || 0) + e.count;
+            dayUsers.set(e.deviceId, cur);
+          }
+
+          const dayUserList = [];
+          for (const [deviceId, counts] of dayUsers.entries()) {
+            const info = await resolveDevice(deviceId);
+            if (info.isOwner && !includeOwner) continue;
+            dayUserList.push({
+              device_id: deviceId,
+              email: info.email,
+              chat: counts.chat || 0,
+              flashcard: counts.flashcard || 0,
+              total: (counts.chat || 0) + (counts.flashcard || 0)
+            });
+
+            const tot = deviceTotals.get(deviceId) || { email: info.email, isOwner: info.isOwner, chat: 0, flashcard: 0 };
+            tot.chat += counts.chat || 0;
+            tot.flashcard += counts.flashcard || 0;
+            deviceTotals.set(deviceId, tot);
+          }
+
+          dayUserList.sort((a, b) => b.total - a.total);
+          dayResults.push({
+            date: d,
+            users: dayUserList,
+            total_requests: dayUserList.reduce((s, u) => s + u.total, 0)
+          });
+        }
+
+        const summary = [...deviceTotals.entries()]
+          .filter(([, v]) => includeOwner || !v.isOwner)
+          .map(([deviceId, v]) => ({
+            device_id: deviceId,
+            email: v.email,
+            chat: v.chat,
+            flashcard: v.flashcard,
+            total: v.chat + v.flashcard
+          }))
+          .sort((a, b) => b.total - a.total);
+
+        return json({ ok: true, days: dayResults, summary_range_days: numDays, summary });
+      }
+
       // ── KITA-JOIN ─────────────────────────────────────────────
       if (url.pathname === "/kita-join") {
         const body = await request.json();
@@ -279,7 +361,19 @@ export default {
       // ── ANTHROPIC PROXY ───────────────────────────────────────
       const deviceId = request.headers.get("x-device-id") || "unknown";
       const userAgent = request.headers.get("user-agent") || "";
+      const userEmail = (request.headers.get("x-user-email") || "").trim().toLowerCase();
       const today = new Date().toISOString().slice(0, 10);
+      const body = await request.json();
+      const isStream = body.stream === true;
+      const usageType = (body.model && body.model.includes("haiku")) ? "flashcard" : "chat";
+
+      // E-Mail-Zuordnung + Owner-Kennzeichnung (eigene Test-Nutzung)
+      if (userEmail && userEmail.includes("@")) {
+        await env.RATE_STORE.put(`email:${deviceId}`, userEmail, { expirationTtl: 60 * 60 * 24 * 365 });
+        if (userEmail === OWNER_EMAIL) {
+          await env.RATE_STORE.put(`owner:${deviceId}`, "1", { expirationTtl: 60 * 60 * 24 * 365 });
+        }
+      }
 
       // Bot-Erkennung
       const { is_bot, signals } = detectBot(deviceId, userAgent);
@@ -315,14 +409,16 @@ export default {
       if (current >= effectiveLimit) return json({ error: "Tageslimit erreicht. Bitte morgen wieder versuchen." }, 429);
       await env.RATE_STORE.put(rateLimitKey, String(current + 1), { expirationTtl: 86400 });
 
+      // Nutzung pro Gerät/Tag/Typ loggen (nur tatsächlich durchgelassene Requests) — für /usage-detail
+      const usageKey = `usage:${today}:${deviceId}:${usageType}`;
+      const usageCount = parseInt(await env.RATE_STORE.get(usageKey) || "0");
+      await env.RATE_STORE.put(usageKey, String(usageCount + 1), { expirationTtl: 60 * 60 * 24 * 60 });
+
       // Kita-Request-Counter
       if (isKitaMember) {
         const kitaReqs = parseInt(await env.RATE_STORE.get(`stats:kita_requests:${today}`) || "0");
         await env.RATE_STORE.put(`stats:kita_requests:${today}`, String(kitaReqs + 1), { expirationTtl: 60 * 60 * 24 * 30 });
       }
-
-      const body = await request.json();
-      const isStream = body.stream === true;
 
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
