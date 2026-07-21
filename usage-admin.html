@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Montessori-Begleiter — Nutzung</title>
+<style>
+  :root{--sand:#F2EBE1;--sand2:#EAE0D2;--brown:#3B2F2A;--brown2:#6b5a4e;--green:#3d5e42;--green2:#7A8D7B;--terracotta:#C88A75;--err:#c0392b;--ok:#3d5e42}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--sand);color:var(--brown);padding:24px}
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 4px}
+  .sub{color:var(--brown2);font-size:13px;margin:0 0 24px}
+  .card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid var(--sand2)}
+  .controls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+  label{display:block;font-size:12px;font-weight:600;margin:0 0 4px;color:var(--brown2)}
+  input[type=number]{width:90px;padding:9px 10px;border:1px solid var(--sand2);border-radius:8px;font-size:14px;font-family:inherit;background:var(--sand)}
+  .chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--brown2);padding-bottom:9px}
+  button{padding:10px 18px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+  button:disabled{opacity:.5;cursor:default}
+  .status{font-size:13px;color:var(--brown2);padding:10px 0}
+  .status.err{color:var(--err)}
+  .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
+  .kpi{background:var(--sand);border-radius:10px;padding:14px;text-align:center}
+  .kpi .n{font-size:26px;font-weight:700;color:var(--green)}
+  .kpi .l{font-size:11px;color:var(--brown2);margin-top:3px}
+  .section-title{font-size:11px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin:20px 0 8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:6px 8px;font-weight:600;color:var(--brown2);border-bottom:1px solid var(--sand2)}
+  td{padding:7px 8px;border-bottom:1px solid var(--sand2)}
+  tr:last-child td{border-bottom:none}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--brown2)}
+  .day-header{cursor:pointer;background:var(--sand);border-radius:8px;padding:9px 12px;font-size:13px;font-weight:600;margin-top:8px;display:flex;justify-content:space-between}
+  .day-body{display:none;padding:4px 8px 10px}
+  .day-body.open{display:block}
+  .empty{color:var(--brown2);font-size:12.5px;padding:8px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Nutzung — wer, wann, wie viel</h1>
+  <p class="sub">Internes Tool. Eigene Test-Nutzung ist standardmäßig ausgeschlossen.</p>
+
+  <div class="card">
+    <div class="controls">
+      <div>
+        <label>Zeitraum (Tage)</label>
+        <input type="number" id="u-days" value="7" min="1" max="31">
+      </div>
+      <div class="chk">
+        <input type="checkbox" id="u-include-owner">
+        <label style="margin:0" for="u-include-owner">Eigene Nutzung mit anzeigen</label>
+      </div>
+      <button onclick="loadUsage()" id="u-btn">Laden</button>
+    </div>
+    <div class="status" id="u-status"></div>
+  </div>
+
+  <div id="u-content" style="display:none">
+    <div class="kpis">
+      <div class="kpi"><div class="n" id="k-total">–</div><div class="l">Anfragen gesamt</div></div>
+      <div class="kpi"><div class="n" id="k-users">–</div><div class="l">Aktive Nutzer</div></div>
+      <div class="kpi"><div class="n" id="k-avg">–</div><div class="l">Ø pro Nutzer</div></div>
+    </div>
+
+    <div class="section-title">Nutzer im Zeitraum (Summe)</div>
+    <div class="card" style="padding:10px 16px">
+      <table>
+        <tr><th>E-Mail</th><th>Gerät</th><th>Chat</th><th>Flashcards</th><th>Gesamt</th></tr>
+        <tbody id="u-summary-body"></tbody>
+      </table>
+      <div class="empty" id="u-summary-empty" style="display:none">Keine Nutzung in diesem Zeitraum.</div>
+    </div>
+
+    <div class="section-title">Nach Tag</div>
+    <div id="u-days-list"></div>
+  </div>
+</div>
+
+<script>
+var PW = 'passt';
+
+function esc(s) {
+  return (s || '').toString().replace(/[&<>"']/g, function(c) {
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+
+function shortDevice(id) {
+  if (!id) return '–';
+  return id.length > 14 ? '…' + id.slice(-10) : id;
+}
+
+async function loadUsage() {
+  var days = parseInt(document.getElementById('u-days').value) || 7;
+  var includeOwner = document.getElementById('u-include-owner').checked;
+  var btn = document.getElementById('u-btn');
+  var status = document.getElementById('u-status');
+  btn.disabled = true; btn.textContent = 'Lädt...';
+  status.textContent = ''; status.className = 'status';
+  document.getElementById('u-content').style.display = 'none';
+
+  try {
+    var url = 'https://montessori-proxy.liam-broemer.workers.dev/usage-detail?days=' + days + (includeOwner ? '&include_owner=true' : '');
+    var r = await fetch(url, { method: 'POST', headers: { 'x-admin-password': PW } });
+    var d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Unbekannter Fehler.');
+
+    var totalReqs = (d.summary || []).reduce(function(s, u) { return s + u.total; }, 0);
+    var userCount = (d.summary || []).length;
+    document.getElementById('k-total').textContent = totalReqs;
+    document.getElementById('k-users').textContent = userCount;
+    document.getElementById('k-avg').textContent = userCount > 0 ? (totalReqs / userCount).toFixed(1) : '0';
+
+    // Summary-Tabelle
+    var body = document.getElementById('u-summary-body');
+    var emptyEl = document.getElementById('u-summary-empty');
+    body.innerHTML = '';
+    if (!d.summary || d.summary.length === 0) {
+      emptyEl.style.display = 'block';
+    } else {
+      emptyEl.style.display = 'none';
+      d.summary.forEach(function(u) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + (u.email ? esc(u.email) : '<span class="mono">unbekannt</span>') + '</td>' +
+          '<td class="mono" title="' + esc(u.device_id) + '">' + esc(shortDevice(u.device_id)) + '</td>' +
+          '<td>' + u.chat + '</td>' +
+          '<td>' + u.flashcard + '</td>' +
+          '<td><strong>' + u.total + '</strong></td>';
+        body.appendChild(tr);
+      });
+    }
+
+    // Tages-Liste
+    var daysList = document.getElementById('u-days-list');
+    daysList.innerHTML = '';
+    (d.days || []).slice().reverse().forEach(function(day, idx) {
+      var wrap = document.createElement('div');
+      var bodyId = 'day-body-' + idx;
+      var isToday = day.date === new Date().toISOString().slice(0,10);
+      wrap.innerHTML =
+        '<div class="day-header" onclick="document.getElementById(\'' + bodyId + '\').classList.toggle(\'open\')">' +
+          '<span>' + esc(day.date) + (isToday ? ' (heute)' : '') + '</span>' +
+          '<span>' + day.total_requests + ' Anfragen · ' + day.users.length + ' Nutzer</span>' +
+        '</div>' +
+        '<div class="day-body" id="' + bodyId + '">' +
+          (day.users.length === 0 ? '<div class="empty">Keine Nutzung an diesem Tag.</div>' :
+            '<table><tr><th>E-Mail</th><th>Gerät</th><th>Chat</th><th>Flashcards</th><th>Gesamt</th></tr>' +
+            day.users.map(function(u) {
+              return '<tr><td>' + (u.email ? esc(u.email) : '<span class="mono">unbekannt</span>') + '</td>' +
+                '<td class="mono" title="' + esc(u.device_id) + '">' + esc(shortDevice(u.device_id)) + '</td>' +
+                '<td>' + u.chat + '</td><td>' + u.flashcard + '</td><td><strong>' + u.total + '</strong></td></tr>';
+            }).join('') + '</table>') +
+        '</div>';
+      daysList.appendChild(wrap);
+    });
+
+    document.getElementById('u-content').style.display = 'block';
+  } catch (e) {
+    status.textContent = 'Fehler: ' + e.message;
+    status.className = 'status err';
+  }
+  btn.disabled = false; btn.textContent = 'Laden';
+}
+</script>
+</body>
+</html>
