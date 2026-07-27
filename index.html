@@ -955,44 +955,45 @@ body.mobile-mode .hbtn{padding:5px 8px}
     <p style="font-size:12px;color:var(--lx);line-height:1.6;margin:0 0 14px">🔒 Zum Schutz der Privatsphäre werden keine sensiblen Daten gespeichert oder übertragen. Alle Angaben bleiben ausschließlich auf eurem Gerät.</p>
     <div class="fg">
       <label class="fl">Name</label>
-      <input type="text" id="p-name" placeholder="z. B. Lena" maxlength="30">
+      <input type="text" id="p-name" placeholder="z. B. Lena" maxlength="30" onblur="autoSaveProfile()">
       <div style="font-size:11.5px;color:var(--lx);margin-top:4px">Optional: nur den Anfangsbuchstaben verwenden (z. B. "L.")</div>
     </div>
     <div class="fg"><label class="fl">Alter</label><div class="ar">
-      <select id="p-years"><option value="">Kein Alter</option><option value="0">unter 1</option><option value="1">1 Jahr</option><option value="2">2 Jahre</option><option value="3">3 Jahre</option><option value="4">4 Jahre</option><option value="5">5 Jahre</option><option value="6">6 Jahre</option></select>
-      <select id="p-months"><option value="">Monate</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option></select>
+      <select id="p-years" onchange="autoSaveProfile()"><option value="">Kein Alter</option><option value="0">unter 1</option><option value="1">1 Jahr</option><option value="2">2 Jahre</option><option value="3">3 Jahre</option><option value="4">4 Jahre</option><option value="5">5 Jahre</option><option value="6">6 Jahre</option></select>
+      <select id="p-months" onchange="autoSaveProfile()"><option value="">Monate</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option></select>
     </div></div>
-    <div class="fg"><label class="fl">Geschlecht</label><select id="p-gender"><option value="">keine Angabe</option><option value="w">Mädchen</option><option value="m">Junge</option><option value="d">Divers</option></select></div>
-    <div class="fg"><label class="fl">Geschwister</label><select id="p-siblings">
+    <div class="fg"><label class="fl">Geschlecht</label><select id="p-gender" onchange="autoSaveProfile()"><option value="">keine Angabe</option><option value="w">Mädchen</option><option value="m">Junge</option><option value="d">Divers</option></select></div>
+    <div class="fg"><label class="fl">Geschwister</label><select id="p-siblings" onchange="autoSaveProfile()">
       <option value="">keine Geschwister</option>
       <option value="aelter">hat älteres Geschwisterkind</option>
       <option value="juenger">hat jüngeres Geschwisterkind</option>
       <option value="neu">neues Geschwisterkind (&lt;6 Monate)</option>
     </select></div>
-    <div class="fg"><label class="fl">Betreuung</label><select id="p-care">
+    <div class="fg"><label class="fl">Betreuung</label><select id="p-care" onchange="autoSaveProfile()">
       <option value="">zuhause</option>
       <option value="kita_laenger">Kita/Krippe seit längerem</option>
       <option value="kita_neu">Kita/Krippe, gerade erst gestartet</option>
     </select></div>
-    <div class="fg"><label class="fl">Kommunikation</label><select id="p-communication">
+    <div class="fg"><label class="fl">Kommunikation</label><select id="p-communication" onchange="autoSaveProfile()">
       <option value="">keine Angabe</option>
       <option value="saetze">spricht in Sätzen</option>
       <option value="woerter">spricht einzelne Wörter</option>
       <option value="keine">spricht noch nicht</option>
     </select></div>
-    <div class="fg"><label class="fl">Reaktion bei Grenzen</label><select id="p-reaction">
+    <div class="fg"><label class="fl">Reaktion bei Grenzen</label><select id="p-reaction" onchange="autoSaveProfile()">
       <option value="">keine Angabe</option>
       <option value="rueckzug">zieht sich eher zurück</option>
       <option value="wut">wird eher laut-wütend</option>
       <option value="ignoriert">ignoriert komplett</option>
     </select></div>
     <div class="fg"><label class="fl">Aktuelle Veränderungen</label><div id="ctx-checks">
-      <div class="cbrow"><input type="checkbox" id="c1" value="Umzug in letzter Zeit"><label for="c1">Umzug in letzter Zeit</label></div>
-      <div class="cbrow"><input type="checkbox" id="c2" value="Eltern getrennt"><label for="c2">Eltern getrennt</label></div>
-      <div class="cbrow"><input type="checkbox" id="c3" value="Trauerfall oder Verlust"><label for="c3">Trauerfall oder Verlust</label></div>
+      <div class="cbrow"><input type="checkbox" id="c1" value="Umzug in letzter Zeit" onchange="autoSaveProfile()"><label for="c1">Umzug in letzter Zeit</label></div>
+      <div class="cbrow"><input type="checkbox" id="c2" value="Eltern getrennt" onchange="autoSaveProfile()"><label for="c2">Eltern getrennt</label></div>
+      <div class="cbrow"><input type="checkbox" id="c3" value="Trauerfall oder Verlust" onchange="autoSaveProfile()"><label for="c3">Trauerfall oder Verlust</label></div>
     </div></div>
-    <div class="fg"><label class="fl">Notizen</label><textarea class="fta" id="p-notes" placeholder="Sonstiges, das noch wichtig sein könnte..."></textarea></div>
-    <button class="sbtn" onclick="saveProfile()">Profil speichern</button>
+    <div class="fg"><label class="fl">Notizen</label><textarea class="fta" id="p-notes" placeholder="Sonstiges, das noch wichtig sein könnte..." onblur="autoSaveProfile()"></textarea></div>
+    <div style="font-size:11.5px;color:var(--lx);margin:2px 0 12px">Alle Angaben werden automatisch gespeichert, sobald du ein Feld verlässt.</div>
+    <button class="sbtn" onclick="closeAllPanels()">Fertig</button>
     <button class="clbtn" onclick="clearProfile()">Profil löschen</button>
   </div>
 </div>
@@ -4261,13 +4262,9 @@ function applyProfile() {
   if (profile.notes) document.getElementById('p-notes').value = profile.notes;
   document.querySelectorAll('#ctx-checks input[type=checkbox]').forEach(function(cb) { cb.checked = (profile.context || []).indexOf(cb.value) !== -1; });
 }
-function saveProfile() {
+function autoSaveProfile() {
   var yearsVal = document.getElementById('p-years').value;
-  if (yearsVal === '') {
-    clearProfile();
-    addSysMsg('Kinderprofil gelöscht. Antworten beziehen sich ab jetzt auf keine gespeicherten Angaben mehr.');
-    return;
-  }
+  var hadAgeBefore = profile.years !== undefined && profile.years !== '';
   var ctx = [];
   document.querySelectorAll('#ctx-checks input[type=checkbox]').forEach(function(cb) { if (cb.checked) ctx.push(cb.value); });
   profile = {
@@ -4284,9 +4281,11 @@ function saveProfile() {
     observations: profile.observations || []
   };
   localStorage.setItem('mont_profile', JSON.stringify(profile));
+  if (yearsVal === '' && hadAgeBefore) {
+    window.montAgePopupShown = false;
+  }
   chatHist = [];
-  updatePill(); updatePNote(); closeAllPanels();
-  addSysMsg('Profil gespeichert. Alle neuen Antworten berücksichtigen jetzt die aktuellen Angaben zu ' + (profile.name || 'eurem Kind') + '.');
+  updatePill(); updatePNote();
 }
 function clearProfile() {
   profile = {}; localStorage.removeItem('mont_profile');
