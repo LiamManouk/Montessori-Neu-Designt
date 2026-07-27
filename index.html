@@ -5015,6 +5015,15 @@ async function chatGo() {
 
         if (!obj.clarify) {
           window.montAnswerCount = (window.montAnswerCount || 0) + 1;
+          if (obj.topic) {
+            try {
+              fetch('https://montessori-proxy.liam-broemer.workers.dev/log-topic', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-device-id': getDeviceId() },
+                body: JSON.stringify({ topic: obj.topic })
+              }).catch(function(){});
+            } catch(e) {}
+          }
         }
 
         if (!obj.clarify && obj.followup) {
