@@ -1338,13 +1338,8 @@ function resetOnboarding() {
 }
 
 function checkOnboarding() {
-  var done = localStorage.getItem('mont_onboarded');
   applyDeviceMode();
-  if (done) {
-    document.getElementById('onboarding').classList.add('done');
-  } else {
-    obUpdateNav();
-  }
+  document.getElementById('onboarding').classList.add('done');
 }
 // ─────────────────────────────────────────────────
 
