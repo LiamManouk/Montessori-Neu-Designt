@@ -5290,7 +5290,7 @@ var I18N = {
     menuTitle:'Menu', menuChat:'Companion (Chat)', menuLearn:'Learn', menuProg:'Progress',
     menuKita:'Kita', menuChild:'Child', menuSources:'Sources', menuReset:'Restart introduction',
     menuLang:'Language: English',
-    cta:'Describe a problem. Get a Montessori answer.',
+    cta:'Describe your challenge.<br>Get the Montessori answer.',
     foot:'Scientific child development research & Montessori primary texts. Not a substitute for professional advice',
     examples:['My child will not eat vegetables','My child hits others','My child will not go to sleep','My child will not do homework','My child does not listen to me']
   }
@@ -5308,7 +5308,7 @@ function applyLang() {
   document.getElementById('mi-child').textContent = t.menuChild;
   document.getElementById('mi-sources').textContent = t.menuSources;
   document.getElementById('mi-reset').textContent = t.menuReset;
-  document.getElementById('cta-line').textContent = t.cta;
+  document.getElementById('cta-line').innerHTML = t.cta;
   document.getElementById('foot').textContent = t.foot;
   phExamples = t.examples;
   phIdx = 0; phChar = 0;
