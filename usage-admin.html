@@ -71,6 +71,15 @@
       <div class="empty" id="u-summary-empty" style="display:none">Keine Nutzung in diesem Zeitraum.</div>
     </div>
 
+    <div class="section-title">Meistgestellte Themen (anonymisiert)</div>
+    <div class="card" style="padding:10px 16px">
+      <table>
+        <tr><th>Thema</th><th>Anfragen</th></tr>
+        <tbody id="u-topics-body"></tbody>
+      </table>
+      <div class="empty" id="u-topics-empty" style="display:none">Keine Themen-Daten in diesem Zeitraum.</div>
+    </div>
+
     <div class="section-title">Nach Tag</div>
     <div id="u-days-list"></div>
   </div>
@@ -128,6 +137,21 @@ async function loadUsage() {
           '<td>' + u.flashcard + '</td>' +
           '<td><strong>' + u.total + '</strong></td>';
         body.appendChild(tr);
+      });
+    }
+
+    // Themen-Tabelle
+    var topicsBody = document.getElementById('u-topics-body');
+    var topicsEmpty = document.getElementById('u-topics-empty');
+    topicsBody.innerHTML = '';
+    if (!d.topics || d.topics.length === 0) {
+      topicsEmpty.style.display = 'block';
+    } else {
+      topicsEmpty.style.display = 'none';
+      d.topics.forEach(function(t) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + esc(t.topic) + '</td><td><strong>' + t.count + '</strong></td>';
+        topicsBody.appendChild(tr);
       });
     }
 
