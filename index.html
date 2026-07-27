@@ -952,14 +952,14 @@ body.mobile-mode .hbtn{padding:5px 8px}
   <div class="ph"><h2>Kinderprofil</h2><button class="xbtn" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="pb">
     <div id="pnote" class="pnote"></div>
-    <p style="font-size:12px;color:var(--lx);line-height:1.6;margin:0 0 14px">🔒 Zum Schutz der Privatsphäre werden keine sensiblen Daten gespeichert oder übertragen — alle Angaben bleiben ausschließlich auf eurem Gerät.</p>
+    <p style="font-size:12px;color:var(--lx);line-height:1.6;margin:0 0 14px">🔒 Zum Schutz der Privatsphäre werden keine sensiblen Daten gespeichert oder übertragen. Alle Angaben bleiben ausschließlich auf eurem Gerät.</p>
     <div class="fg">
       <label class="fl">Name</label>
       <input type="text" id="p-name" placeholder="z. B. Lena" maxlength="30">
       <div style="font-size:11.5px;color:var(--lx);margin-top:4px">Optional: nur den Anfangsbuchstaben verwenden (z. B. "L.")</div>
     </div>
     <div class="fg"><label class="fl">Alter</label><div class="ar">
-      <select id="p-years"><option value="">Jahre</option><option value="0">unter 1</option><option value="1">1 Jahr</option><option value="2">2 Jahre</option><option value="3">3 Jahre</option><option value="4">4 Jahre</option><option value="5">5 Jahre</option><option value="6">6 Jahre</option></select>
+      <select id="p-years"><option value="">Kein Alter</option><option value="0">unter 1</option><option value="1">1 Jahr</option><option value="2">2 Jahre</option><option value="3">3 Jahre</option><option value="4">4 Jahre</option><option value="5">5 Jahre</option><option value="6">6 Jahre</option></select>
       <select id="p-months"><option value="">Monate</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option></select>
     </div></div>
     <div class="fg"><label class="fl">Geschlecht</label><select id="p-gender"><option value="">keine Angabe</option><option value="w">Mädchen</option><option value="m">Junge</option><option value="d">Divers</option></select></div>
@@ -4242,8 +4242,14 @@ function applyProfile() {
 function saveProfile() {
   var ctx = [];
   document.querySelectorAll('#ctx-checks input[type=checkbox]').forEach(function(cb) { if (cb.checked) ctx.push(cb.value); });
-  profile = { name: document.getElementById('p-name').value.trim(), years: document.getElementById('p-years').value, months: document.getElementById('p-months').value, gender: document.getElementById('p-gender').value, notes: document.getElementById('p-notes').value.trim(), context: ctx };
+  var yearsVal = document.getElementById('p-years').value;
+  var monthsVal = yearsVal === '' ? '' : document.getElementById('p-months').value;
+  profile = { name: document.getElementById('p-name').value.trim(), years: yearsVal, months: monthsVal, gender: document.getElementById('p-gender').value, notes: document.getElementById('p-notes').value.trim(), context: ctx };
   localStorage.setItem('mont_profile', JSON.stringify(profile));
+  if (yearsVal === '') {
+    window.montAgePopupShown = false;
+    document.getElementById('p-months').value = '';
+  }
   chatHist = [];
   updatePill(); updatePNote(); closeAllPanels();
   addSysMsg('Profil gespeichert. Alle neuen Antworten berücksichtigen jetzt die aktuellen Angaben zu ' + (profile.name || 'eurem Kind') + '.');
@@ -4252,6 +4258,7 @@ function clearProfile() {
   profile = {}; localStorage.removeItem('mont_profile');
   ['p-name','p-years','p-months','p-gender','p-notes'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.querySelectorAll('#ctx-checks input').forEach(function(cb) { cb.checked = false; });
+  window.montAgePopupShown = false;
   updatePill(); updatePNote(); closeAllPanels();
 }
 function getAge() {
