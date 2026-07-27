@@ -4281,7 +4281,7 @@ function autoSaveProfile() {
   };
   localStorage.setItem('mont_profile', JSON.stringify(profile));
   if (yearsVal === '' && hadAgeBefore) {
-    window.montAgePopupShown = false;
+    window.montAgePopupCount = 0;
   }
   chatHist = [];
   updatePill(); updatePNote();
@@ -4290,7 +4290,7 @@ function clearProfile() {
   profile = {}; localStorage.removeItem('mont_profile');
   ['p-name','p-years','p-months','p-gender','p-siblings','p-care','p-communication','p-reaction','p-notes'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.querySelectorAll('#ctx-checks input').forEach(function(cb) { cb.checked = false; });
-  window.montAgePopupShown = false;
+  window.montAgePopupCount = 0;
   chatHist = [];
   updatePill(); updatePNote(); closeAllPanels();
 }
@@ -4986,7 +4986,7 @@ async function chatGo() {
   if (!text || chatBusy) return;
   if (document.getElementById('age-popup').classList.contains('show')) return;
   var hasAgeNow = profile && profile.years !== undefined && profile.years !== '';
-  if (window.montAnswerCount >= 1 && !hasAgeNow && !window.montAgePopupShown) {
+  if (window.montAnswerCount >= 1 && !hasAgeNow && (window.montAgePopupCount || 0) < 2) {
     showAgePopup();
     return;
   }
@@ -5574,8 +5574,8 @@ function dismissPwaBanner() {
   localStorage.setItem('pwa_dismissed', '1');
 }
 function showAgePopup() {
-  if (window.montAgePopupShown) return;
-  window.montAgePopupShown = true;
+  if ((window.montAgePopupCount || 0) >= 2) return;
+  window.montAgePopupCount = (window.montAgePopupCount || 0) + 1;
   document.getElementById('age-popup').classList.add('show');
   document.getElementById('age-overlay').classList.add('show');
 }
