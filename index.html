@@ -4893,7 +4893,8 @@ async function chatGo() {
   var ctx = profileCtx();
   var kgCtx = buildKgCtx();
   var fullCtx = [kgCtx, ctx].filter(Boolean).join('\n');
-  chatHist.push({role:'user', content: fullCtx ? fullCtx + '\n\nFrage: ' + text : text});
+  var langTag = currentLang() === 'en' ? 'LANGUAGE: Respond in English only, all fields in English.\n\n' : '';
+  chatHist.push({role:'user', content: langTag + (fullCtx ? fullCtx + '\n\nFrage: ' + text : text)});
   if (chatHist.length > 10) chatHist = chatHist.slice(chatHist.length - 10);
   showTyping();
   try {
@@ -5340,6 +5341,7 @@ function applyLang() {
 function chooseLang(lang) {
   localStorage.setItem('mont_lang', lang);
   localStorage.setItem('mont_lang_chosen', '1');
+  chatHist = [];
   applyLang();
 }
 
