@@ -60,6 +60,10 @@ body{display:flex;flex-direction:column;overflow:hidden;height:100%}
 #child-pill.visible{display:flex}
 /* tabs */
 #tab-nav{display:none}
+#lang-picker{display:flex;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;overflow:hidden}
+#lang-picker span{padding:7px 9px;font-size:11px;font-family:'Inter',sans-serif;color:rgba(255,255,255,.75);cursor:pointer}
+#lang-picker span:hover{color:#fff;background:rgba(255,255,255,.1)}
+#lang-picker span:first-child{border-right:1px solid rgba(255,255,255,.2)}
 .menu-item{width:100%;text-align:left;padding:14px 10px;font-size:15px;font-family:'Inter',sans-serif;color:var(--tx);background:none;border:none;border-radius:8px;cursor:pointer}
 .menu-item:hover,.menu-item:active{background:var(--s1)}
 .menu-sep{height:1px;background:var(--s2);margin:8px 4px}
@@ -718,6 +722,9 @@ body.mobile-mode .hbtn{padding:5px 8px}
 <div id="hdr">
   <div class="hlogo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 20 C12 20 12 12 12 9" stroke="rgba(255,255,255,0.9)" stroke-width="1.4" stroke-linecap="round"/><path d="M12 9 C12 4 7 3 6 7 C7.5 7 10 8 12 9Z" fill="rgba(255,255,255,0.55)" stroke="rgba(255,255,255,0.8)" stroke-width=".8"/><path d="M12 13 C12 8 17 7 18 10 C16 10 14 11 12 13Z" fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.6)" stroke-width=".8"/></svg></div>
   <div id="hdr-right">
+    <div id="lang-picker">
+      <span onclick="chooseLang('de')">DE</span><span onclick="chooseLang('en')">EN</span>
+    </div>
     <button class="hbtn" id="menu-btn" onclick="openPanel('menu')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     </button>
@@ -727,7 +734,7 @@ body.mobile-mode .hbtn{padding:5px 8px}
 <div id="app-body">
 <div id="view-chat" class="active">
   <div id="msgs">
-    <div class="cta-line" id="cta-line">Problem schildern – Montessori-Antwort erhalten.</div>
+    <div class="cta-line" id="cta-line">Problem schildern. Montessori-Antwort erhalten.</div>
   </div>
   <div id="chips" style="display:none"></div>
   <div id="ibar">
@@ -906,17 +913,18 @@ body.mobile-mode .hbtn{padding:5px 8px}
 <div id="overlay" onclick="closeAllPanels()"></div>
 
 <div id="menu-panel" class="panel">
-  <div class="ph"><h2>Menü</h2><button class="xbtn" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="ph"><h2 id="menu-title">Menü</h2><button class="xbtn" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="pb" style="padding:6px 10px">
-    <button class="menu-item" onclick="closeAllPanels();switchTab('chat')">Begleiter (Chat)</button>
-    <button class="menu-item" onclick="closeAllPanels();switchTab('learn')">Lernen</button>
-    <button class="menu-item" onclick="closeAllPanels();switchTab('prog')">Fortschritt</button>
+    <button class="menu-item" id="mi-chat" onclick="closeAllPanels();switchTab('chat')">Begleiter (Chat)</button>
+    <button class="menu-item" id="mi-learn" onclick="closeAllPanels();switchTab('learn')">Lernen</button>
+    <button class="menu-item" id="mi-prog" onclick="closeAllPanels();switchTab('prog')">Fortschritt</button>
     <div class="menu-sep"></div>
-    <button class="menu-item" onclick="openPanel('kindergarten')">Kita</button>
-    <button class="menu-item" onclick="openPanel('profile')">Kind</button>
-    <button class="menu-item" onclick="openPanel('sources')">Quellen</button>
+    <button class="menu-item" id="mi-kita" onclick="openPanel('kindergarten')">Kita</button>
+    <button class="menu-item" id="mi-child" onclick="openPanel('profile')">Kind</button>
+    <button class="menu-item" id="mi-sources" onclick="openPanel('sources')">Quellen</button>
     <div class="menu-sep"></div>
-    <button class="menu-item" onclick="closeAllPanels();resetOnboarding()">Einführung neu starten</button>
+    <button class="menu-item" id="mi-lang" onclick="toggleLangFromMenu()" style="display:none"></button>
+    <button class="menu-item" id="mi-reset" onclick="closeAllPanels();resetOnboarding()">Einführung neu starten</button>
   </div>
 </div>
 
@@ -4819,7 +4827,7 @@ async function streamChatOnce(maxTok, d) {
       model: 'claude-sonnet-4-6',
       max_tokens: maxTok,
       stream: true,
-      system: [{type:'text', text:SYS, cache_control:{type:'ephemeral'}}],
+      system: [{type:'text', text:SYS + (currentLang()==='en' ? '\n\nWICHTIG: Antworte ab jetzt vollstaendig auf Englisch statt Deutsch. Gleiche JSON-Struktur, gleiche Feldnamen, nur die Werte auf Englisch.' : ''), cache_control:{type:'ephemeral'}}],
       messages: chatHist.slice(-4)
     })
   });
@@ -5275,6 +5283,63 @@ try {
 renderThemes();
 checkOnboarding();
 
+// ─── Sprach-Umschaltung (DE/EN) ──────────────────────────────────
+var I18N = {
+  de: {
+    menuTitle:'Menü', menuChat:'Begleiter (Chat)', menuLearn:'Lernen', menuProg:'Fortschritt',
+    menuKita:'Kita', menuChild:'Kind', menuSources:'Quellen', menuReset:'Einführung neu starten',
+    menuLang:'Sprache: Deutsch',
+    cta:'Problem schildern. Montessori-Antwort erhalten.',
+    foot:'Wissenschaftliche Entwicklungsforschung & Montessori-Originaltexte. Kein Ersatz für Fachberatung',
+    examples:['Mein Kind isst kein Gemüse','Mein Kind haut andere','Mein Kind will nicht schlafen gehen','Mein Kind macht keine Hausaufgaben','Mein Kind hört nicht auf mich']
+  },
+  en: {
+    menuTitle:'Menu', menuChat:'Companion (Chat)', menuLearn:'Learn', menuProg:'Progress',
+    menuKita:'Kita', menuChild:'Child', menuSources:'Sources', menuReset:'Restart introduction',
+    menuLang:'Language: English',
+    cta:'Describe a problem. Get a Montessori answer.',
+    foot:'Scientific child development research & Montessori primary texts. Not a substitute for professional advice',
+    examples:['My child will not eat vegetables','My child hits others','My child will not go to sleep','My child will not do homework','My child does not listen to me']
+  }
+};
+
+function currentLang() { return localStorage.getItem('mont_lang') || 'de'; }
+
+function applyLang() {
+  var lang = currentLang(), t = I18N[lang];
+  document.getElementById('menu-title').textContent = t.menuTitle;
+  document.getElementById('mi-chat').textContent = t.menuChat;
+  document.getElementById('mi-learn').textContent = t.menuLearn;
+  document.getElementById('mi-prog').textContent = t.menuProg;
+  document.getElementById('mi-kita').textContent = t.menuKita;
+  document.getElementById('mi-child').textContent = t.menuChild;
+  document.getElementById('mi-sources').textContent = t.menuSources;
+  document.getElementById('mi-reset').textContent = t.menuReset;
+  document.getElementById('cta-line').textContent = t.cta;
+  document.getElementById('foot').textContent = t.foot;
+  phExamples = t.examples;
+  phIdx = 0; phChar = 0;
+  var miLang = document.getElementById('mi-lang');
+  if (localStorage.getItem('mont_lang_chosen')) {
+    miLang.style.display = 'block';
+    miLang.textContent = t.menuLang;
+    document.getElementById('lang-picker').style.display = 'none';
+  } else {
+    miLang.style.display = 'none';
+    document.getElementById('lang-picker').style.display = 'flex';
+  }
+}
+
+function chooseLang(lang) {
+  localStorage.setItem('mont_lang', lang);
+  localStorage.setItem('mont_lang_chosen', '1');
+  applyLang();
+}
+
+function toggleLangFromMenu() {
+  chooseLang(currentLang() === 'de' ? 'en' : 'de');
+}
+
 // ─── Animierter Beispiel-Placeholder (Typewriter) ───────────────
 var phExamples = [
   'Mein Kind isst kein Gemüse',
@@ -5301,7 +5366,7 @@ function phTick() {
   }
 }
 phTick();
-
+applyLang();
 
 // ── PWA INSTALL BANNER ────────────────────────────────
 function isIOS() {
