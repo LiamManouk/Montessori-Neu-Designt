@@ -4240,16 +4240,16 @@ function applyProfile() {
   document.querySelectorAll('#ctx-checks input[type=checkbox]').forEach(function(cb) { cb.checked = (profile.context || []).indexOf(cb.value) !== -1; });
 }
 function saveProfile() {
+  var yearsVal = document.getElementById('p-years').value;
+  if (yearsVal === '') {
+    clearProfile();
+    addSysMsg('Kinderprofil gelöscht. Antworten beziehen sich ab jetzt auf keine gespeicherten Angaben mehr.');
+    return;
+  }
   var ctx = [];
   document.querySelectorAll('#ctx-checks input[type=checkbox]').forEach(function(cb) { if (cb.checked) ctx.push(cb.value); });
-  var yearsVal = document.getElementById('p-years').value;
-  var monthsVal = yearsVal === '' ? '' : document.getElementById('p-months').value;
-  profile = { name: document.getElementById('p-name').value.trim(), years: yearsVal, months: monthsVal, gender: document.getElementById('p-gender').value, notes: document.getElementById('p-notes').value.trim(), context: ctx };
+  profile = { name: document.getElementById('p-name').value.trim(), years: yearsVal, months: document.getElementById('p-months').value, gender: document.getElementById('p-gender').value, notes: document.getElementById('p-notes').value.trim(), context: ctx };
   localStorage.setItem('mont_profile', JSON.stringify(profile));
-  if (yearsVal === '') {
-    window.montAgePopupShown = false;
-    document.getElementById('p-months').value = '';
-  }
   chatHist = [];
   updatePill(); updatePNote(); closeAllPanels();
   addSysMsg('Profil gespeichert. Alle neuen Antworten berücksichtigen jetzt die aktuellen Angaben zu ' + (profile.name || 'eurem Kind') + '.');
@@ -4259,6 +4259,7 @@ function clearProfile() {
   ['p-name','p-years','p-months','p-gender','p-notes'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.querySelectorAll('#ctx-checks input').forEach(function(cb) { cb.checked = false; });
   window.montAgePopupShown = false;
+  chatHist = [];
   updatePill(); updatePNote(); closeAllPanels();
 }
 function getAge() {
