@@ -62,6 +62,22 @@ export default {
         return json({ ok: true });
       }
 
+      // ── THEMEN-TRACKING (anonymisiert): welche Fragen-Themen wie oft ──
+      if (url.pathname === "/log-topic") {
+        const body = await request.json();
+        const topic = (body.topic || "").trim();
+        if (!topic) return json({ ok: true });
+        const deviceId = request.headers.get("x-device-id") || "unknown";
+        const isOwner = (await env.RATE_STORE.get(`owner:${deviceId}`)) === "1";
+        if (!isOwner) {
+          const today = new Date().toISOString().slice(0, 10);
+          const topicKey = `topic:${today}:${topic}`;
+          const count = parseInt(await env.RATE_STORE.get(topicKey) || "0");
+          await env.RATE_STORE.put(topicKey, String(count + 1), { expirationTtl: 60 * 60 * 24 * 60 });
+        }
+        return json({ ok: true });
+      }
+
       // ── EMAIL SPEICHERN ───────────────────────────────────────
       if (url.pathname === "/save-email") {
         const body = await request.json();
@@ -299,6 +315,21 @@ export default {
           });
         }
 
+        // Themen-Haeufigkeit ueber den ganzen Zeitraum (anonymisiert, kein Geraete-/Email-Bezug)
+        const topicTotals = new Map();
+        for (let i = numDays - 1; i >= 0; i--) {
+          const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+          const topicList = await env.RATE_STORE.list({ prefix: `topic:${d}:` });
+          for (const k of topicList.keys) {
+            const topicName = k.name.split(":")[2];
+            const count = parseInt(await env.RATE_STORE.get(k.name) || "0");
+            topicTotals.set(topicName, (topicTotals.get(topicName) || 0) + count);
+          }
+        }
+        const topics = Array.from(topicTotals.entries())
+          .map(([topic, count]) => ({ topic, count }))
+          .sort((a, b) => b.count - a.count);
+
         const summary = [...deviceTotals.entries()]
           .filter(([, v]) => includeOwner || !v.isOwner)
           .map(([deviceId, v]) => ({
@@ -310,7 +341,7 @@ export default {
           }))
           .sort((a, b) => b.total - a.total);
 
-        return json({ ok: true, days: dayResults, summary_range_days: numDays, summary });
+        return json({ ok: true, days: dayResults, summary_range_days: numDays, summary, topics });
       }
 
       // ── KITA-JOIN ─────────────────────────────────────────────
