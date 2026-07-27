@@ -566,14 +566,17 @@ body.mobile-mode .hbtn{padding:5px 8px}
 .pwa-step{display:flex;align-items:center;gap:10px;font-size:12.5px;color:rgba(255,255,255,.9)}
 .pwa-step-num{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
 .pwa-dismiss{background:none;border:1px solid rgba(255,255,255,.25);border-radius:8px;color:rgba(255,255,255,.7);font-size:12px;font-family:'Inter',sans-serif;padding:8px 16px;cursor:pointer;width:100%}
-#age-popup{position:fixed;bottom:0;left:0;right:0;background:var(--g1);color:#fff;z-index:601;padding:16px 18px 20px;box-shadow:0 -4px 20px rgba(0,0,0,.25);transform:translateY(100%);transition:transform .35s ease;border-radius:18px 18px 0 0}
-#age-popup.show{transform:translateY(0)}
-#age-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:600;display:none}
+#age-popup{position:fixed;top:50%;left:50%;width:min(380px,88vw);min-height:33vh;background:var(--wh);color:var(--tx);border-radius:20px;z-index:601;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.94);transition:opacity .2s ease,transform .2s ease}
+#age-popup.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+#age-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:600;display:none}
 #age-overlay.show{display:block}
-.age-popup-row{display:flex;gap:9px;align-items:center;margin-top:6px}
-#age-popup-input{width:64px;padding:9px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:15px;font-family:'Inter',sans-serif}
-.age-popup-unit{font-size:13px;color:rgba(255,255,255,.65)}
-.age-popup-save{margin-left:auto;background:#fff;color:var(--g1);border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.age-popup-body{padding:22px 22px 26px;display:flex;flex-direction:column;flex:1;justify-content:center;gap:16px}
+#age-popup-desc{font-size:14.5px;color:var(--mx);line-height:1.55;margin:0}
+.age-popup-row{display:flex;gap:10px;align-items:center}
+#age-popup-input{width:76px;padding:11px 12px;border-radius:10px;border:1px solid var(--s3);background:var(--s1);color:var(--tx);font-size:16px;font-family:'Inter',sans-serif}
+.age-popup-unit{font-size:14px;color:var(--mx)}
+.age-popup-save{background:var(--g1);color:#fff;border:none;border-radius:10px;padding:12px 16px;font-size:14.5px;font-weight:600;cursor:pointer;width:100%}
+.age-popup-link{background:none;border:none;color:var(--mx);font-size:13px;text-decoration:underline;text-underline-offset:2px;cursor:pointer;padding:2px;font-family:'Inter',sans-serif}
 .pwa-dismiss:hover{background:rgba(255,255,255,.1)}
 
 @media (max-width: 480px) {
@@ -598,12 +601,15 @@ body.mobile-mode .hbtn{padding:5px 8px}
 
 <div id="age-overlay"></div>
 <div id="age-popup">
-  <button class="pwa-close-x" onclick="closeAgePopup()" aria-label="Schließen">✕</button>
-  <div class="pwa-banner-title">Kinderalter eingeben für eine genauere Antwort</div>
-  <div class="age-popup-row">
-    <input type="number" id="age-popup-input" min="0" max="10" step="0.5" placeholder="z. B. 3" inputmode="decimal">
-    <span class="age-popup-unit">Jahre</span>
-    <button class="age-popup-save" onclick="saveAgeQuick()">Speichern</button>
+  <div class="ph"><h2 id="age-popup-title">Kinderalter eingeben</h2><button class="xbtn" onclick="closeAgePopup()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="age-popup-body">
+    <p id="age-popup-desc">Damit die Antwort genauer wird und sich an das Alter deines Kindes anpasst.</p>
+    <div class="age-popup-row">
+      <input type="number" id="age-popup-input" min="0" max="10" step="0.5" placeholder="z. B. 3" inputmode="decimal">
+      <span class="age-popup-unit" id="age-popup-unit">Jahre</span>
+    </div>
+    <button class="age-popup-save" id="age-popup-save" onclick="saveAgeQuick()">Speichern</button>
+    <button class="age-popup-link" id="age-popup-link" onclick="closeAgePopup();openPanel('profile')">Kinderprofil öffnen und Antwort weiter schärfen</button>
   </div>
 </div>
 
@@ -5305,7 +5311,13 @@ var I18N = {
     menuLang:'Sprache: Deutsch',
     cta:'Schildere deine Herausforderung.<br>Erhalte die Montessori-Antwort.',
     foot:'Wissenschaftliche Entwicklungsforschung & Montessori-Originaltexte. Kein Ersatz für Fachberatung',
-    examples:['Mein Kind isst kein Gemüse','Mein Kind haut andere','Mein Kind will nicht schlafen gehen','Mein Kind macht keine Hausaufgaben','Mein Kind hört nicht auf mich']
+    examples:['Mein Kind isst kein Gemüse','Mein Kind haut andere','Mein Kind will nicht schlafen gehen','Mein Kind macht keine Hausaufgaben','Mein Kind hört nicht auf mich'],
+    ageTitle:'Kinderalter eingeben',
+    ageDesc:'Damit die Antwort genauer wird und sich an das Alter deines Kindes anpasst.',
+    ageUnit:'Jahre',
+    ageSave:'Speichern',
+    ageLink:'Kinderprofil öffnen und Antwort weiter schärfen',
+    agePlaceholder:'z. B. 3'
   },
   en: {
     menuTitle:'Menu', menuChat:'Companion (Chat)', menuLearn:'Learn', menuProg:'Progress',
@@ -5313,7 +5325,13 @@ var I18N = {
     menuLang:'Language: English',
     cta:'Describe your challenge.<br>Get the Montessori answer.',
     foot:'Scientific child development research & Montessori primary texts. Not a substitute for professional advice',
-    examples:['My child will not eat vegetables','My child hits others','My child will not go to sleep','My child will not do homework','My child does not listen to me']
+    examples:['My child will not eat vegetables','My child hits others','My child will not go to sleep','My child will not do homework','My child does not listen to me'],
+    ageTitle:'Enter child\'s age',
+    ageDesc:'This makes the answer more precise and tailored to your child\'s age.',
+    ageUnit:'years',
+    ageSave:'Save',
+    ageLink:'Open child profile and sharpen the answer further',
+    agePlaceholder:'e.g. 3'
   }
 };
 
@@ -5330,6 +5348,12 @@ function applyLang() {
   document.getElementById('mi-sources').textContent = t.menuSources;
   document.getElementById('mi-reset').textContent = t.menuReset;
   document.getElementById('cta-line').innerHTML = t.cta;
+  document.getElementById('age-popup-title').textContent = t.ageTitle;
+  document.getElementById('age-popup-desc').textContent = t.ageDesc;
+  document.getElementById('age-popup-unit').textContent = t.ageUnit;
+  document.getElementById('age-popup-save').textContent = t.ageSave;
+  document.getElementById('age-popup-link').textContent = t.ageLink;
+  document.getElementById('age-popup-input').setAttribute('placeholder', t.agePlaceholder);
   phExamples = t.examples;
   phIdx = 0; phChar = 0;
   var miLang = document.getElementById('mi-lang');
