@@ -532,6 +532,12 @@ body.mobile-mode .hbtn{padding:5px 8px}
 .learn-bridge-lbl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--g2);margin-bottom:2px}
 .learn-bridge-title{font-size:13px;color:var(--tx);font-weight:500}
 .learn-bridge-arrow{font-size:18px;color:var(--g3);flex-shrink:0}
+.age-banner-wrap{margin-top:10px}
+.age-banner{display:flex;align-items:center;gap:10px;padding:11px 13px;background:#EFF3F8;border:1px solid #C8D8E8;border-radius:10px;cursor:pointer;transition:border-color .15s}
+.age-banner:hover{border-color:#8CA9C9}
+.age-banner-icon{flex-shrink:0;color:#4A6FA5;display:flex}
+.age-banner-text{flex:1;font-size:12.5px;line-height:1.55;color:var(--tx)}
+.age-banner-arrow{font-size:18px;color:#4A6FA5;flex-shrink:0}
 
 .learn-search-wrap{margin-bottom:18px}
 .learn-search-wrap input{width:100%;padding:9px 13px;border:1.5px solid var(--s3);border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;color:var(--tx);background:var(--wh);outline:none}
@@ -1270,8 +1276,6 @@ function resetOnboarding() {
   localStorage.removeItem('mont_onboarded');
   localStorage.removeItem('mont_setup_done');
   localStorage.removeItem('mont_first_chat_done');
-  localStorage.removeItem('mont_answer_count');
-  localStorage.removeItem('mont_profile_hint_shown');
   // Onboarding 1 zurücksetzen
   obStep = 0;
   document.getElementById('onboarding').classList.remove('done');
@@ -4579,17 +4583,17 @@ function addSysMsg(text) {
   d.innerHTML = '<div class="av"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20 L12 10" stroke="#4A6350" stroke-width="1.5" stroke-linecap="round"/><path d="M12 10 C12 5 7 4 6 7 C8 7 10 8.5 12 10Z" fill="#7A8D7B"/><path d="M12 15 C12 10 17 8 18 11 C16 11 14 13 12 15Z" fill="#B5C4B6"/></svg></div><div class="bub" style="font-size:13px;color:var(--g2);font-style:italic">' + text + '</div>';
   m.appendChild(d); scrollChat();
 }
-function showProfileHint() {
-  var m = document.getElementById('msgs'), d = document.createElement('div');
-  d.className = 'msg bot';
-  d.innerHTML = '<div class="av"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 20 L12 10" stroke="#4A6350" stroke-width="1.5" stroke-linecap="round"/><path d="M12 10 C12 5 7 4 6 7 C8 7 10 8.5 12 10Z" fill="#7A8D7B"/><path d="M12 15 C12 10 17 8 18 11 C16 11 14 13 12 15Z" fill="#B5C4B6"/></svg></div>'
-    + '<div class="bub" style="background:var(--g6);border:1px solid var(--g4)">'
-    + '<div style="font-size:13px;color:var(--g1);line-height:1.6"><strong>Tipp:</strong> Möchtest du ein Kinderprofil anlegen? Dann antwortet der Begleiter genauer. Keine sensiblen Daten — alles bleibt lokal auf deinem Gerät gespeichert.</div>'
-    + '<div style="margin-top:10px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--lx)">'
-    + '<span>Button oben rechts:</span>'
-    + '<span class="hbtn" style="pointer-events:none;display:inline-flex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Kind</span></span>'
-    + '</div></div>';
-  m.appendChild(d); scrollChat();
+function appendAgeBanner(m) {
+  var wrap = document.createElement('div');
+  wrap.className = 'age-banner-wrap';
+  wrap.innerHTML = '<div class="age-banner">'
+    + '<div class="age-banner-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>'
+    + '<div class="age-banner-text">Diese Antwort ist auf kein bestimmtes Alter bezogen. Gib das Alter deines Kindes im Kinderprofil ein, für eine genauere Antwort.</div>'
+    + '<div class="age-banner-arrow">&#8250;</div>'
+    + '</div>';
+  wrap.querySelector('.age-banner').addEventListener('click', function() { openPanel('profile'); });
+  m.appendChild(wrap);
+  scrollChat();
 }
 function showTyping() {
   var m = document.getElementById('msgs'), d = document.createElement('div');
@@ -4931,12 +4935,9 @@ async function chatGo() {
       }
 
       if (!obj.clarify) {
-        var answerCount = parseInt(localStorage.getItem('mont_answer_count') || '0') + 1;
-        localStorage.setItem('mont_answer_count', String(answerCount));
-        var hasProfile = profile && (profile.name || (profile.years !== undefined && profile.years !== ''));
-        if (answerCount === 3 && !hasProfile && !localStorage.getItem('mont_profile_hint_shown')) {
-          localStorage.setItem('mont_profile_hint_shown', '1');
-          setTimeout(showProfileHint, 1200);
+        var hasAge = profile && profile.years !== undefined && profile.years !== '';
+        if (!hasAge) {
+          appendAgeBanner(m);
         }
       }
     } catch(e2) {
