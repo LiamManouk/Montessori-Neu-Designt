@@ -963,17 +963,35 @@ body.mobile-mode .hbtn{padding:5px 8px}
       <select id="p-months"><option value="">Monate</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option></select>
     </div></div>
     <div class="fg"><label class="fl">Geschlecht</label><select id="p-gender"><option value="">keine Angabe</option><option value="w">Mädchen</option><option value="m">Junge</option><option value="d">Divers</option></select></div>
-    <div class="fg"><label class="fl">Lebenssituation</label><div id="ctx-checks">
-      <div class="cbrow"><input type="checkbox" id="c1" value="besucht Kindergarten"><label for="c1">Geht in Kindergarten / Krippe</label></div>
-      <div class="cbrow"><input type="checkbox" id="c2" value="frisch eingewöhnt"><label for="c2">Frisch eingewöhnt (&lt;3 Monate)</label></div>
-      <div class="cbrow"><input type="checkbox" id="c3" value="hat Geschwister"><label for="c3">Hat Geschwister</label></div>
-      <div class="cbrow"><input type="checkbox" id="c4" value="neues Geschwisterkind"><label for="c4">Neues Geschwister (letzte 6 Mo.)</label></div>
-      <div class="cbrow"><input type="checkbox" id="c5" value="Umzug in letzter Zeit"><label for="c5">Umzug in letzter Zeit</label></div>
-      <div class="cbrow"><input type="checkbox" id="c6" value="Eltern getrennt"><label for="c6">Eltern getrennt</label></div>
-      <div class="cbrow"><input type="checkbox" id="c7" value="sehr sensitives Kind"><label for="c7">Sehr sensitives Kind</label></div>
-      <div class="cbrow"><input type="checkbox" id="c8" value="Sprachentwicklung später"><label for="c8">Sprachentwicklung etwas später</label></div>
+    <div class="fg"><label class="fl">Geschwister</label><select id="p-siblings">
+      <option value="">keine Geschwister</option>
+      <option value="aelter">hat älteres Geschwisterkind</option>
+      <option value="juenger">hat jüngeres Geschwisterkind</option>
+      <option value="neu">neues Geschwisterkind (&lt;6 Monate)</option>
+    </select></div>
+    <div class="fg"><label class="fl">Betreuung</label><select id="p-care">
+      <option value="">zuhause</option>
+      <option value="kita_laenger">Kita/Krippe seit längerem</option>
+      <option value="kita_neu">Kita/Krippe, gerade erst gestartet</option>
+    </select></div>
+    <div class="fg"><label class="fl">Kommunikation</label><select id="p-communication">
+      <option value="">keine Angabe</option>
+      <option value="saetze">spricht in Sätzen</option>
+      <option value="woerter">spricht einzelne Wörter</option>
+      <option value="keine">spricht noch nicht</option>
+    </select></div>
+    <div class="fg"><label class="fl">Reaktion bei Grenzen</label><select id="p-reaction">
+      <option value="">keine Angabe</option>
+      <option value="rueckzug">zieht sich eher zurück</option>
+      <option value="wut">wird eher laut-wütend</option>
+      <option value="ignoriert">ignoriert komplett</option>
+    </select></div>
+    <div class="fg"><label class="fl">Aktuelle Veränderungen</label><div id="ctx-checks">
+      <div class="cbrow"><input type="checkbox" id="c1" value="Umzug in letzter Zeit"><label for="c1">Umzug in letzter Zeit</label></div>
+      <div class="cbrow"><input type="checkbox" id="c2" value="Eltern getrennt"><label for="c2">Eltern getrennt</label></div>
+      <div class="cbrow"><input type="checkbox" id="c3" value="Trauerfall oder Verlust"><label for="c3">Trauerfall oder Verlust</label></div>
     </div></div>
-    <div class="fg"><label class="fl">Notizen</label><textarea class="fta" id="p-notes" placeholder="Besonderheiten, Schlafverhalten..."></textarea></div>
+    <div class="fg"><label class="fl">Notizen</label><textarea class="fta" id="p-notes" placeholder="Sonstiges, das noch wichtig sein könnte..."></textarea></div>
     <button class="sbtn" onclick="saveProfile()">Profil speichern</button>
     <button class="clbtn" onclick="clearProfile()">Profil löschen</button>
   </div>
@@ -4236,6 +4254,10 @@ function applyProfile() {
   if (profile.years !== undefined) document.getElementById('p-years').value = profile.years;
   if (profile.months !== undefined) document.getElementById('p-months').value = profile.months;
   if (profile.gender) document.getElementById('p-gender').value = profile.gender;
+  if (profile.siblings) document.getElementById('p-siblings').value = profile.siblings;
+  if (profile.care) document.getElementById('p-care').value = profile.care;
+  if (profile.communication) document.getElementById('p-communication').value = profile.communication;
+  if (profile.reaction) document.getElementById('p-reaction').value = profile.reaction;
   if (profile.notes) document.getElementById('p-notes').value = profile.notes;
   document.querySelectorAll('#ctx-checks input[type=checkbox]').forEach(function(cb) { cb.checked = (profile.context || []).indexOf(cb.value) !== -1; });
 }
@@ -4248,7 +4270,19 @@ function saveProfile() {
   }
   var ctx = [];
   document.querySelectorAll('#ctx-checks input[type=checkbox]').forEach(function(cb) { if (cb.checked) ctx.push(cb.value); });
-  profile = { name: document.getElementById('p-name').value.trim(), years: yearsVal, months: document.getElementById('p-months').value, gender: document.getElementById('p-gender').value, notes: document.getElementById('p-notes').value.trim(), context: ctx };
+  profile = {
+    name: document.getElementById('p-name').value.trim(),
+    years: yearsVal,
+    months: document.getElementById('p-months').value,
+    gender: document.getElementById('p-gender').value,
+    siblings: document.getElementById('p-siblings').value,
+    care: document.getElementById('p-care').value,
+    communication: document.getElementById('p-communication').value,
+    reaction: document.getElementById('p-reaction').value,
+    notes: document.getElementById('p-notes').value.trim(),
+    context: ctx,
+    observations: profile.observations || []
+  };
   localStorage.setItem('mont_profile', JSON.stringify(profile));
   chatHist = [];
   updatePill(); updatePNote(); closeAllPanels();
@@ -4256,7 +4290,7 @@ function saveProfile() {
 }
 function clearProfile() {
   profile = {}; localStorage.removeItem('mont_profile');
-  ['p-name','p-years','p-months','p-gender','p-notes'].forEach(function(id) { document.getElementById(id).value = ''; });
+  ['p-name','p-years','p-months','p-gender','p-siblings','p-care','p-communication','p-reaction','p-notes'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.querySelectorAll('#ctx-checks input').forEach(function(cb) { cb.checked = false; });
   window.montAgePopupShown = false;
   chatHist = [];
@@ -4307,7 +4341,27 @@ function saveObservation(obs, question) {
 }
 function profileCtx() {
   if (!profile || !Object.keys(profile).length) return '';
-  var s = 'KINDERPROFIL: '; if (profile.name) s += 'Name: ' + profile.name + '. '; if (getAge()) s += 'Alter: ' + getAge() + '. '; if (profile.gender === 'w') s += 'Maedchen. '; if (profile.gender === 'm') s += 'Junge. '; if (profile.context && profile.context.length) s += 'Lebenssituation: ' + profile.context.join(', ') + '. '; if (profile.notes) s += 'Notizen: ' + profile.notes + '. '; if (profile.observations && profile.observations.length) s += 'Bisherige Beobachtungen der Eltern: ' + profile.observations.join(' | ') + '. '; s += 'Bitte beziehe dich konkret auf ' + (profile.name || 'das Kind') + '.'; return s;
+  var s = 'KINDERPROFIL: ';
+  if (profile.name) s += 'Name: ' + profile.name + '. ';
+  if (getAge()) s += 'Alter: ' + getAge() + '. ';
+  if (profile.gender === 'w') s += 'Maedchen. ';
+  if (profile.gender === 'm') s += 'Junge. ';
+  if (profile.siblings === 'aelter') s += 'Hat ein aelteres Geschwisterkind. ';
+  if (profile.siblings === 'juenger') s += 'Hat ein juengeres Geschwisterkind. ';
+  if (profile.siblings === 'neu') s += 'Hat seit kurzem (unter 6 Monaten) ein neues Geschwisterkind, moegliche Eifersucht/Regression beachten. ';
+  if (profile.care === 'kita_laenger') s += 'Geht seit laengerem in Kita/Krippe. ';
+  if (profile.care === 'kita_neu') s += 'Ist gerade erst in Kita/Krippe gestartet, moegliche Eingewoehnungs-Regression beachten. ';
+  if (profile.communication === 'saetze') s += 'Kommunikation: spricht bereits in Saetzen, verbale Erklaerungen sind gut nutzbar. ';
+  if (profile.communication === 'woerter') s += 'Kommunikation: spricht erst einzelne Woerter, einfache kurze Sprache und Gesten nutzen statt langer Erklaerungen. ';
+  if (profile.communication === 'keine') s += 'Kommunikation: spricht noch nicht, KEINE verbalen Erklaerungen als Hauptstrategie vorschlagen, stattdessen Gesten, Vormachen, Koerpersprache. ';
+  if (profile.reaction === 'rueckzug') s += 'Reagiert bei Grenzen eher mit Rueckzug, braucht Naehe und Geduld statt Konfrontation. ';
+  if (profile.reaction === 'wut') s += 'Reagiert bei Grenzen eher mit lautem Wutausbruch, braucht Ko-Regulation und Raum. ';
+  if (profile.reaction === 'ignoriert') s += 'Ignoriert Grenzen oft komplett, braucht klare, wiederholte, ruhige Ansagen statt einmaliger Erklaerung. ';
+  if (profile.context && profile.context.length) s += 'Aktuelle Veraenderungen: ' + profile.context.join(', ') + '. ';
+  if (profile.notes) s += 'Notizen: ' + profile.notes + '. ';
+  if (profile.observations && profile.observations.length) s += 'Bisherige Beobachtungen der Eltern: ' + profile.observations.join(' | ') + '. ';
+  s += 'Bitte beziehe dich konkret auf ' + (profile.name || 'das Kind') + '.';
+  return s;
 }
 
 // ═══════════════════════════════════════════════════════
