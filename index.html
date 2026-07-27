@@ -59,7 +59,10 @@ body{display:flex;flex-direction:column;overflow:hidden;height:100%}
 #child-pill{display:none;align-items:center;gap:5px;background:var(--tc5);border:1px solid var(--tc4);border-radius:20px;padding:4px 10px;font-size:11.5px;color:var(--tc1);cursor:pointer}
 #child-pill.visible{display:flex}
 /* tabs */
-#tab-nav{background:var(--g1);border-top:2px solid rgba(255,255,255,.08);display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+#tab-nav{display:none}
+.menu-item{width:100%;text-align:left;padding:14px 10px;font-size:15px;font-family:'Inter',sans-serif;color:var(--tx);background:none;border:none;border-radius:8px;cursor:pointer}
+.menu-item:hover,.menu-item:active{background:var(--s1)}
+.menu-sep{height:1px;background:var(--s2);margin:8px 4px}
 .tab-btn{flex:1;padding:11px 4px 9px;font-size:12px;font-family:'Inter',sans-serif;font-weight:400;color:rgba(255,255,255,.55);background:none;border:none;cursor:pointer;border-top:3px solid transparent;transition:all .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .tab-btn svg{width:19px;height:19px;flex-shrink:0}
 .tab-btn.active{color:#fff;border-top-color:var(--tc2);font-weight:600;background:rgba(255,255,255,.07)}
@@ -102,12 +105,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 /* chat */
 #msgs{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;min-height:0;overflow-anchor:none}
 .welcome{background:var(--g6);border:1px solid var(--g4);border-radius:var(--r);padding:14px 18px}
-.welcome h2{font-family:'Lora',serif;font-size:15px;font-weight:400;color:var(--g1);margin-bottom:5px}
-.welcome p{font-size:13px;color:var(--mx);line-height:1.65}
+.welcome h2{font-family:'Lora',serif;font-size:18px;font-weight:400;color:var(--g1);margin-bottom:6px}
+.welcome p{font-size:15px;color:var(--mx);line-height:1.65}
 .msg{display:flex;gap:9px;max-width:92%}
 .msg.user{align-self:flex-end;flex-direction:row-reverse}
 .av{width:28px;height:28px;border-radius:50%;background:var(--g5);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
-.bub{padding:11px 14px;font-size:13.5px;line-height:1.72;border-radius:var(--r);word-break:break-word}
+.bub{padding:11px 14px;font-size:16px;line-height:1.6;border-radius:var(--r);word-break:break-word}
 .msg.bot .bub{background:var(--wh);border:1px solid var(--s2);border-radius:4px var(--r) var(--r) var(--r)}
 .msg.user .bub{background:var(--tc2);color:#fff;border-radius:var(--r) 4px var(--r) var(--r)}
 .empathy{display:block;font-style:italic;color:var(--tc2);margin-bottom:11px;font-size:13.5px;line-height:1.6}
@@ -126,7 +129,7 @@ ul.donts li{color:#8A3A2A}
 ul.donts li::before{content:"✗";position:absolute;left:0;color:#C86050;font-weight:600}
 .srcnote{font-size:10px;color:var(--lx);margin-top:9px;padding-top:6px;border-top:1px solid var(--s2)}
 #chips{padding:6px 14px 8px;display:flex;flex-wrap:nowrap;gap:6px;border-top:1px solid var(--s2);background:var(--s1);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
-.chip{font-size:11.5px;padding:5px 11px;border-radius:20px;border:1px solid var(--s3);background:var(--wh);color:var(--mx);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0}
+.chip{font-size:13.5px;padding:7px 13px;border-radius:20px;border:1px solid var(--s3);background:var(--wh);color:var(--mx);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0}
 .chip:hover{background:var(--g5);border-color:var(--g2);color:var(--g1)}
 #ibar{padding:9px 18px 13px;background:var(--s1);flex-shrink:0}
 .iwrap{display:flex;gap:8px;align-items:flex-end;background:var(--wh);border:1px solid var(--s3);border-radius:var(--r);padding:7px 7px 7px 13px}
@@ -705,18 +708,8 @@ body.mobile-mode .hbtn{padding:5px 8px}
 <div id="hdr">
   <div class="hlogo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 20 C12 20 12 12 12 9" stroke="rgba(255,255,255,0.9)" stroke-width="1.4" stroke-linecap="round"/><path d="M12 9 C12 4 7 3 6 7 C7.5 7 10 8 12 9Z" fill="rgba(255,255,255,0.55)" stroke="rgba(255,255,255,0.8)" stroke-width=".8"/><path d="M12 13 C12 8 17 7 18 10 C16 10 14 11 12 13Z" fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.6)" stroke-width=".8"/></svg></div>
   <div id="hdr-right">
-    
-    <button class="hbtn" onclick="openPanel('kindergarten')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Kita
-    </button>
-    <button class="hbtn" id="profile-btn" onclick="openPanel('profile')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span id="profile-btn-label">Kind</span>
-    </button>
-    <button class="hbtn" onclick="openPanel('sources')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Quellen
-    </button>
-    <button class="hbtn" onclick="resetOnboarding()" title="Einführung neu starten">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><span>Einführung</span>
+    <button class="hbtn" id="menu-btn" onclick="openPanel('menu')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
     </button>
   </div>
 </div>
@@ -741,16 +734,9 @@ body.mobile-mode .hbtn{padding:5px 8px}
     </div>
   </div>
   <div id="chips">
-    <button class="chip" onclick="chip('Mein Kind will sich morgens nicht anziehen')">Anziehen</button>
     <button class="chip" onclick="chip('Mein Kind hat einen Wutanfall')">Wutanfall</button>
-    <button class="chip" onclick="chip('Kind nimmt anderen das Spielzeug weg')">Spielzeug wegnehmen</button>
-    <button class="chip" onclick="chip('Mein Kind haut und beißt andere')">Hauen & Beißen</button>
     <button class="chip" onclick="chip('Kind räumt nicht auf')">Nicht aufräumen</button>
     <button class="chip" onclick="chip('Mein Kind schläft nicht ein')">Einschlafen</button>
-    <button class="chip" onclick="chip('Kind hört einfach nicht auf mich')">Hört nicht</button>
-    <button class="chip" onclick="chip('Kind schlägt mich wenn es wütend ist')">Schlägt Eltern</button>
-    <button class="chip" onclick="chip('Kind quengelt den ganzen Tag')">Quengeln</button>
-    <button class="chip" onclick="chip('Kind läuft immer weg')">Weglaufen</button>
   </div>
   <div id="ibar">
     <div class="iwrap">
@@ -924,6 +910,21 @@ body.mobile-mode .hbtn{padding:5px 8px}
 </div>
 
 <div id="overlay" onclick="closeAllPanels()"></div>
+
+<div id="menu-panel" class="panel">
+  <div class="ph"><h2>Menü</h2><button class="xbtn" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="pb" style="padding:6px 10px">
+    <button class="menu-item" onclick="closeAllPanels();switchTab('chat')">Begleiter (Chat)</button>
+    <button class="menu-item" onclick="closeAllPanels();switchTab('learn')">Lernen</button>
+    <button class="menu-item" onclick="closeAllPanels();switchTab('prog')">Fortschritt</button>
+    <div class="menu-sep"></div>
+    <button class="menu-item" onclick="openPanel('kindergarten')">Kita</button>
+    <button class="menu-item" onclick="openPanel('profile')">Kind</button>
+    <button class="menu-item" onclick="openPanel('sources')">Quellen</button>
+    <div class="menu-sep"></div>
+    <button class="menu-item" onclick="closeAllPanels();resetOnboarding()">Einführung neu starten</button>
+  </div>
+</div>
 
 <div id="profile-panel" class="panel">
   <div class="ph"><h2>Kinderprofil</h2><button class="xbtn" onclick="closeAllPanels()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
