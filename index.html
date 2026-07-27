@@ -4820,7 +4820,7 @@ async function streamChatOnce(maxTok, d) {
       model: 'claude-sonnet-4-6',
       max_tokens: maxTok,
       stream: true,
-      system: [{type:'text', text:SYS + (currentLang()==='en' ? '\n\nWICHTIG: Antworte ab jetzt vollstaendig auf Englisch statt Deutsch. Gleiche JSON-Struktur, gleiche Feldnamen, nur die Werte auf Englisch.' : ''), cache_control:{type:'ephemeral'}}],
+      system: [{type:'text', text:SYS + (currentLang()==='en' ? '\n\nWICHTIG SPRACHE: Ignoriere die obige Anweisung "Antworte auf Deutsch" vollstaendig. Antworte AUSSCHLIESSLICH auf Englisch (English only). Alle Textfelder (empathy, bio, montessori, dos, donts, sources, clarify) muessen komplett auf Englisch sein, keine deutschen Woerter. Gleiche JSON-Struktur, gleiche Feldnamen wie oben beschrieben, nur die Werte auf Englisch.' : ''), cache_control:{type:'ephemeral'}}],
       messages: chatHist.slice(-4)
     })
   });
