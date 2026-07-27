@@ -128,6 +128,10 @@ ul.dos li::before{content:"✓";position:absolute;left:0;color:var(--g3);font-we
 ul.donts li{color:#8A3A2A}
 ul.donts li::before{content:"✗";position:absolute;left:0;color:#C86050;font-weight:600}
 .srcnote{font-size:10px;color:var(--lx);margin-top:9px;padding-top:6px;border-top:1px solid var(--s2)}
+.bio-details{margin:9px 0}
+.bio-details summary.bio-toggle{list-style:none;cursor:pointer;font-size:12.5px;font-weight:500;color:var(--g2);text-decoration:underline;text-underline-offset:2px;padding:2px 0;width:fit-content}
+.bio-details summary.bio-toggle::-webkit-details-marker{display:none}
+.bio-details[open] summary.bio-toggle{margin-bottom:6px}
 #chips{padding:6px 14px 8px;display:flex;flex-wrap:nowrap;gap:6px;border-top:1px solid var(--s2);background:var(--s1);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
 .chip{font-size:13.5px;padding:7px 13px;border-radius:20px;border:1px solid var(--s3);background:var(--wh);color:var(--mx);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;flex-shrink:0}
 .chip:hover{background:var(--g5);border-color:var(--g2);color:var(--g1)}
@@ -733,14 +737,9 @@ body.mobile-mode .hbtn{padding:5px 8px}
       </div>
     </div>
   </div>
-  <div id="chips">
-    <button class="chip" onclick="chip('Mein Kind hat einen Wutanfall')">Wutanfall</button>
-    <button class="chip" onclick="chip('Kind räumt nicht auf')">Nicht aufräumen</button>
-    <button class="chip" onclick="chip('Mein Kind schläft nicht ein')">Einschlafen</button>
-  </div>
   <div id="ibar">
     <div class="iwrap">
-      <textarea id="inp" rows="1" placeholder="Situation beschreiben..."
+      <textarea id="inp" rows="1" placeholder="Mein Kind will nicht essen…"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatGo()}"
         oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px';document.getElementById('sbtn').disabled=!this.value.trim()||chatBusy"></textarea>
       <button id="sbtn" onclick="chatGo()" disabled>
@@ -4790,11 +4789,6 @@ function renderBotIncremental(obj, d) {
   
   var empathyHtml = obj.empathy ? '<span class="empathy">' + esc(obj.empathy) + '</span>' : '';
   
-  var bioHtml = '';
-  if (obj.bio) {
-    bioHtml = '<div class="sbox biobox"><span class="slbl">Biologischer Hintergrund</span><p>' + esc(obj.bio) + '</p></div>';
-  }
-  
   var montessoriHtml = '';
   if (obj.montessori) {
     montessoriHtml = '<div class="sbox montbox"><span class="slbl">Montessori-Prinzip</span><p>' + esc(obj.montessori) + '</p></div>';
@@ -4807,9 +4801,14 @@ function renderBotIncremental(obj, d) {
     dosHtml = '<span class="albl">Konkrete Empfehlungen</span><ul class="dos">' + dosLi + '</ul><ul class="donts">' + dontsLi + '</ul>';
   }
   
+  var bioHtml = '';
+  if (obj.bio) {
+    bioHtml = '<details class="bio-details"><summary class="bio-toggle">Mehr verstehen</summary><div class="sbox biobox"><span class="slbl">Biologischer Hintergrund</span><p>' + esc(obj.bio) + '</p></div></details>';
+  }
+  
   var srcHtml = obj.sources ? '<div class="srcnote">' + esc(obj.sources) + '</div>' : '';
   
-  bub.innerHTML = empathyHtml + bioHtml + montessoriHtml + dosHtml + srcHtml;
+  bub.innerHTML = empathyHtml + montessoriHtml + dosHtml + bioHtml + srcHtml;
   scrollChat();
 }
 
